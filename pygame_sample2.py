@@ -12,6 +12,12 @@ def make_qest(self):
     change = payment - sum # お釣り
     return sum, payment, change
 
+def clear():
+    guest_num = 10
+    life = 3
+    reslt = 0
+    return guest_num, life, reslt
+
 pygame.init() # pygame初期化(最初に必要)
 
 width = 1000 # 画面サイズ
@@ -19,7 +25,9 @@ height = 600
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("sample game")
 
-
+guest_num = 10
+life = 3
+reslt = 0
 # ゲームループ
 def main():
     while True:
