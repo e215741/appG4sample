@@ -3,6 +3,7 @@ import pygame
 import sys 
 import random
 import math
+import time
 
 result = 0
 guest_num = 10
@@ -12,7 +13,7 @@ score = 0
 def make_question(): # 問題を作成する関数
     total = random.randint(500, 2000) # 合計
     payment = random.randint(total + 1, 3000) # 支払い
-    payment = math.ceil(payment / 10) * 10
+    payment = math.ceil(payment / 100) * 100
     change = payment - total # お釣り
     return total, payment, change
 quest = make_question()
@@ -27,7 +28,15 @@ def num_clear():# 定数を初期化する関数
     new_score = 0
     return new_result, new_guest_num, new_life, new_score
 
-gamescene = 0  # 0 タイトル画面、1 ゲーム画面、2 エンド画面、-1 エラー
+def time_count(endT, startT):# ゲーム時間を計測する関数
+    elapsed_time = int(endT - startT)
+    elapsed_hour = elapsed_time // 3600
+    elapsed_minute = (elapsed_time % 3600) // 60
+    elapsed_second = (elapsed_time % 3600 % 60)
+    return str(elapsed_hour).zfill(2) + "時間" + str(elapsed_minute).zfill(2) + "分" + str(elapsed_second).zfill(2)+ "秒" 
+
+
+gamescene = 0  # 0 タイトル画面、1 ゲーム画面、2 エンド画面、3 ゲームオーバー画面、-1 エラー
 width = 1000 # 画面サイズ横
 height = 600 # 画面サイズ縦
 
@@ -73,6 +82,42 @@ running = True
 while running:
     screen.fill((238,249,255))  # 背景を塗りつぶす(red, green, blue)
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+            pygame.quit() # ゲームの終了処理
+            sys.exit()
+            
+        if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 1):# 左クリックが押された場合
+            if (gamescene == 0) and (gameButtonRect[0].collidepoint(event.pos)):
+                result ,guest_num,life, score = num_clear()
+                quest = make_question()
+                time_sta = time.time()
+                gamescene = 1
+            elif gamescene == 1:
+                for button_rect, number in inputButtonRect:
+                    if button_rect.collidepoint(event.pos):
+                        result += number
+                if gameButtonRect[1].collidepoint(event.pos):
+                    result = 0 
+                if gameButtonRect[2].collidepoint(event.pos):
+                    if result == quest[2]:
+                        guest_num -= 1
+                        quest = make_question()
+                        if guest_num != 0:
+                            result = 0
+                        elif guest_num == 0:
+                            time_end = time.time() #タイマーを止める
+                            gamescene = 2
+                    elif result != quest[2]:
+                        result = 0
+                        life -= 1
+                        if life == 0:
+                            time_end = time.time()
+                            gamescene = 2
+            elif (gamescene == 2) and (gameButtonRect[3].collidepoint(event.pos)):
+                gamescene = 0
+
     # イベントの処理
     if gamescene == 0:
         screen.blit(gameButton[0], gameButtonRect[0]) # ボタンを配置
@@ -102,49 +147,28 @@ while running:
         life_rect = life_text.get_rect(center=(width // 8, height // 8))
         screen.blit(life_text, life_rect)
         
+        tim_text2 = font.render(time_count(time.time(), time_sta), True,(0,0,0))
+        tim_rect2 = tim_text2.get_rect(center=(width // 8, height // 5))
+        screen.blit(tim_text2, tim_rect2)
+
+    
+        
     elif gamescene == 2:
         screen.blit(gameButton[3], gameButtonRect[3])
-        
+
         end_text = font.render(str(10 - guest_num) + " 問クリア！僕を押すとタイトルに戻るよ", True, (0, 0, 0) )
         end_rect = end_text.get_rect(center=(width // 2, height // 2))
         screen.blit(end_text, end_rect)
+
+        tim_text = font.render("記録!! " + time_count(time_end, time_sta) + "!!!",True,(0,0,0))
+        tim_rect = tim_text.get_rect(center=(width // 2, height // 8))
+        screen.blit(tim_text, tim_rect)
     else:
         print("error")
         running = False
         pygame.quit() # ゲームの終了処理
         sys.exit()
     
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-            pygame.quit() # ゲームの終了処理
-            sys.exit()
-            
-        if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 1):# 左クリックが押された場合
-            if (gamescene == 0) and (gameButtonRect[0].collidepoint(event.pos)):
-                result ,guest_num,life, score = num_clear()
-                quest = make_question()
-                gamescene = 1
-            elif gamescene == 1:
-                for button_rect, number in inputButtonRect:
-                    if button_rect.collidepoint(event.pos):
-                        result += number
-                if gameButtonRect[1].collidepoint(event.pos):
-                    result = 0 
-                if gameButtonRect[2].collidepoint(event.pos):
-                    if result == quest[2]:
-                        guest_num -= 1
-                        quest = make_question()
-                        if guest_num != 0:
-                            result = 0
-                        elif guest_num == 0:
-                            gamescene = 2
-                    elif result != quest[2]:
-                        result = 0
-                        life -= 1
-                        if life == 0:
-                            gamescene = 2
-            elif (gamescene == 2) and (gameButtonRect[3].collidepoint(event.pos)):
-                gamescene = 0
+    
 
     pygame.display.update()
