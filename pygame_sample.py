@@ -1,17 +1,12 @@
 from pygame.locals import *
 import pygame
-import sys 
+import sys
 import random
 import math
 import time
 
-result = 0
-guest_num = 10
-life = 3
-score = 0
-
 def make_question(): # 問題を作成する関数
-    total = random.randint(500, 2000) # 合計
+    total = random.randint(500, 3000) # 合計
     payment = random.randint(total + 1, 3000) # 支払い
     payment = math.ceil(payment / 100) * 100
     change = payment - total # お釣り
@@ -21,21 +16,110 @@ quest = make_question()
 # quest[1] = payment
 # quest[2] = change
 
-def num_clear():# 定数を初期化する関数
+def num_clear(): # 定数を初期化する関数
     new_result = 0
     new_guest_num = 10
     new_life = 3
     new_score = 0
     return new_result, new_guest_num, new_life, new_score
+clear = num_clear()
 
-def time_count(endT, startT):# ゲーム時間を計測する関数
+def time_count(endT, startT): # ゲーム時間を計測する関数
     elapsed_time = int(endT - startT)
     elapsed_hour = elapsed_time // 3600
     elapsed_minute = (elapsed_time % 3600) // 60
     elapsed_second = (elapsed_time % 3600 % 60)
     return str(elapsed_hour).zfill(2) + "時間" + str(elapsed_minute).zfill(2) + "分" + str(elapsed_second).zfill(2)+ "秒" 
 
+def evalate(resltT): # ゲームの評価をする関数
+    if resltT < 60:
+        return "Execellent"
+    elif resltT < 120:
+        return "Very Good"
+    elif resltT < 240:
+        return "Good"
+    elif resltT < 300:
+        return "Average"
+    else:
+        return "Poor"
 
+def gamescene0(): # タイトル画面のview関数
+    screen.blit(design[0], designRect[0]) # おまけで試しに追加した部分.あとで変更
+    screen.blit(gameButton[0], gameButtonRect[0]) # ボタンを配置
+    
+def gamescene1(): # ゲーム画面のview関数
+    screen.blit(gameButton[1], gameButtonRect[1])
+    screen.blit(gameButton[2], gameButtonRect[2])
+    for i in range(6):
+        screen.blit(inputButton[i], inputButtonRect[i][0])
+        
+    result_text = font.render("お釣りは " + str(result) + " 円です", True, (0, 0, 0) )
+    result_rect = result_text.get_rect(center=(width // 2, height // 2))
+    screen.blit(result_text, result_rect)
+
+    total_text = font.render("　　小計 " + str(quest[0]) + " 円", True, (0, 0, 0) )
+    total_rect = total_text.get_rect(center=(width // 2, height // 3))
+    screen.blit(total_text, total_rect)
+    
+    payment_text = font.render("お支払い " + str(quest[1]) + " 円", True, (0, 0, 0) )
+    payment_rect = payment_text.get_rect(center=(width // 2, height // 4))
+    screen.blit(payment_text, payment_rect)
+    
+    guest_text = font.render("残りお客さん " + str(guest_num) + " 人", True, (0, 0, 0) )
+    guest_rect = guest_text.get_rect(center=(width // 2, height // 8))
+    screen.blit(guest_text, guest_rect)
+    
+    life_text = font.render("残機： " + str(life), True, (0, 0, 0) )
+    life_rect = life_text.get_rect(center=(width // 8, height // 8))
+    screen.blit(life_text, life_rect)
+    
+    tim_text2 = font.render(time_count(time.time(), time_sta), True,(0,0,0))
+    tim_rect2 = tim_text2.get_rect(center=(width // 8, height // 5))
+    screen.blit(tim_text2, tim_rect2)
+    
+def gamescene2(): # エンド画面のview関数
+    screen.blit(gameButton[3], gameButtonRect[3])
+
+    end_text = font.render(str(clear[1] - guest_num) + " 問クリア！僕を押すとタイトルに戻るよ", True, (0, 0, 0) )
+    end_rect = end_text.get_rect(center=(width // 2, height // 2))
+    screen.blit(end_text, end_rect)
+
+    tim_text = font.render("記録!! " + time_count(time_end, time_sta) + "!!!",True,(0,0,0))
+    tim_rect = tim_text.get_rect(center=(width // 2, height // 8))
+    screen.blit(tim_text, tim_rect)
+    
+    eva_text = font.render("評価は..." + evalate(game_cler_time) + "!!",True,(0,0,0))
+    eva_rect = eva_text.get_rect(center=(width // 2, height // 5))
+    screen.blit(eva_text, eva_rect)
+        
+def gamescene3(): # ゲームオーバー画面のview関数
+    screen.blit(gameButton[4], gameButtonRect[4])
+    
+    end2_text = font.render(str(clear[1] - guest_num) + " 問クリア...僕を押すとタイトルに戻るよ...", True, (0, 0, 0) )
+    end2_rect = end2_text.get_rect(center=(width // 2, height // 3))
+    screen.blit(end2_text, end2_rect)
+
+# おまけーーーーーーーーーーーーーーーーーーーーーーーーー
+# ハト
+hato = pygame.transform.scale(pygame.image.load("ハト.png"), (100, 100))
+hato_x, hato_y = 0, 300
+hato_change = 1
+
+def hato1(x, y): # ハト関数
+    screen.blit(hato, (x, y))
+
+# スタート画面の桜の画像をロード
+design = []
+design.append(pygame.transform.scale(pygame.image.load("sakura.png"), (1050, 600)))
+
+designRect = [Rect(-10, 0, 1020, 600)]
+# ここまでーーーーーーーーーーーーーーーーーーーーーーーー
+
+# 定数
+result = 0
+guest_num = 10
+life = 3
+score = 0
 gamescene = 0  # 0 タイトル画面、1 ゲーム画面、2 エンド画面、3 ゲームオーバー画面、-1 エラー
 width = 1000 # 画面サイズ横
 height = 600 # 画面サイズ縦
@@ -45,12 +129,14 @@ gameButton.append(pygame.transform.scale(pygame.image.load("start_b.png"), (140,
 gameButton.append(pygame.transform.scale(pygame.image.load("clear_b.png"), (140, 100)))
 gameButton.append(pygame.transform.scale(pygame.image.load("ok_b.png"), (100, 100)))
 gameButton.append(pygame.transform.scale(pygame.image.load("end_b.png"), (200, 200)))
+gameButton.append(pygame.transform.scale(pygame.image.load("end2_b.png"), (400, 300)))
 
 # 画像の表示位置を表す矩形(left, top, rect_width, rect_height)
 gameButtonRect = [Rect(400, 400, 140, 100), # gameButton[0]の位置
                   Rect(750, 400, 140, 100), # gameButton[1]の位置
                   Rect(900, 400, 100, 100), # gameButton[2]の位置
-                  Rect(400, 400, 200, 200)] # gameButton[3]の位置
+                  Rect(400, 400, 200, 200), # gameButton[3]の位置
+                  Rect(300, 300, 400, 300)] # gameButton[4]の位置
 
 inputButton = []
 inputButton.append(pygame.transform.scale(pygame.image.load("1yen_img.PNG"), (100, 100)))
@@ -68,7 +154,7 @@ inputButtonRect = [(Rect(0, 400, 100, 100), 1),
                     (Rect(600, 400, 100, 100), 500)]
 
 # フォントの初期化
-FONT_PATH = "ipaexg.ttf"
+FONT_PATH = "v7.ttf"
 pygame.font.init()
 font = pygame.font.Font(FONT_PATH, 32) # フォントサイズ
 
@@ -80,8 +166,9 @@ pygame.display.set_caption("sample game") # ゲームタイトル
 running = True
 
 while running:
-    screen.fill((238,249,255))  # 背景を塗りつぶす(red, green, blue)
-
+    screen.fill((238,249,255)) # 背景を塗りつぶす(red, green, blue)
+      
+    # イベントの処理
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -108,67 +195,40 @@ while running:
                             result = 0
                         elif guest_num == 0:
                             time_end = time.time() #タイマーを止める
+                            game_cler_time = time_end - time_sta
                             gamescene = 2
                     elif result != quest[2]:
                         result = 0
                         life -= 1
                         if life == 0:
                             time_end = time.time()
-                            gamescene = 2
+                            gamescene = 3
             elif (gamescene == 2) and (gameButtonRect[3].collidepoint(event.pos)):
                 gamescene = 0
-
-    # イベントの処理
+            elif (gamescene == 3) and (gameButtonRect[4].collidepoint(event.pos)):
+                gamescene = 0
+        
     if gamescene == 0:
-        screen.blit(gameButton[0], gameButtonRect[0]) # ボタンを配置
+        gamescene0()
     elif gamescene == 1:
-        screen.blit(gameButton[1], gameButtonRect[1])
-        screen.blit(gameButton[2], gameButtonRect[2])
-        for i in range(6):
-            screen.blit(inputButton[i], inputButtonRect[i][0])
-            
-        result_text = font.render("お釣りは " + str(result) + " 円です", True, (0, 0, 0) )
-        result_rect = result_text.get_rect(center=(width // 2, height // 2))
-        screen.blit(result_text, result_rect)
-    
-        total_text = font.render("　　小計 " + str(quest[0]) + " 円", True, (0, 0, 0) )
-        total_rect = total_text.get_rect(center=(width // 2, height // 3))
-        screen.blit(total_text, total_rect)
-        
-        payment_text = font.render("お支払い " + str(quest[1]) + " 円", True, (0, 0, 0) )
-        payment_rect = payment_text.get_rect(center=(width // 2, height // 4))
-        screen.blit(payment_text, payment_rect)
-        
-        guest_text = font.render("残りお客さん " + str(guest_num) + " 人", True, (0, 0, 0) )
-        guest_rect = guest_text.get_rect(center=(width // 2, height // 8))
-        screen.blit(guest_text, guest_rect)
-        
-        life_text = font.render("残機： " + str(life), True, (0, 0, 0) )
-        life_rect = life_text.get_rect(center=(width // 8, height // 8))
-        screen.blit(life_text, life_rect)
-        
-        tim_text2 = font.render(time_count(time.time(), time_sta), True,(0,0,0))
-        tim_rect2 = tim_text2.get_rect(center=(width // 8, height // 5))
-        screen.blit(tim_text2, tim_rect2)
-
-    
-        
+        gamescene1()
     elif gamescene == 2:
-        screen.blit(gameButton[3], gameButtonRect[3])
-
-        end_text = font.render(str(10 - guest_num) + " 問クリア！僕を押すとタイトルに戻るよ", True, (0, 0, 0) )
-        end_rect = end_text.get_rect(center=(width // 2, height // 2))
-        screen.blit(end_text, end_rect)
-
-        tim_text = font.render("記録!! " + time_count(time_end, time_sta) + "!!!",True,(0,0,0))
-        tim_rect = tim_text.get_rect(center=(width // 2, height // 8))
-        screen.blit(tim_text, tim_rect)
+        gamescene2()
+    elif gamescene == 3:
+        gamescene3()
     else:
         print("error")
         running = False
         pygame.quit() # ゲームの終了処理
         sys.exit()
-    
-    
-
+# おまけ。鳩を動かすコードーーーーーーーーーーーーーーーーーーー
+# 読み込んだハトの画像をここで動かしている。165行以降、画像の位置関係は下にある画像がゲーム画面で上に表示される。
+# このコードの場所は大事。
+    if (hato_x != width):
+        hato_x += 4
+        hato1(hato_x, hato_y)
+    else:
+        hato_x = 0
+        hato1(hato_x, hato_y)
+# ここまでーーーーーーーーーーーーーーーーーーーーーーーーーーー  
     pygame.display.update()
